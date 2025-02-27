@@ -12,7 +12,7 @@ const JSONReq = struct {
         parts: []const Part,
     };
 };
-const JSONRes = struct {
+pub const JSONRes = struct {
     const Candidate = struct {
         const Content = struct {
             parts: []const Part,
@@ -49,7 +49,7 @@ fn Gemini(comptime opts: GeminiOpts) type {
         const Models = .{
             "gemini-2.0-flash",
         };
-        const QueryOut = struct {
+        pub const QueryOut = struct {
             pub fn GetNext(self: *QueryOut) []const u8 {
                 const ll = self.v.value.candidates[0].content.parts;
                 const t = ll[self.partIndex].text;
@@ -69,14 +69,14 @@ fn Gemini(comptime opts: GeminiOpts) type {
 
         client: std.http.Client,
 
-        fn init(alloc: std.mem.Allocator) Self {
+        pub fn init(alloc: std.mem.Allocator) Self {
             return Self{
                 .client = std.http.Client{ .allocator = alloc },
                 .alloc = alloc,
             };
         }
 
-        fn query(self: *Self, text: []const u8) !QueryOut {
+        pub fn query(self: *Self, text: []const u8) !QueryOut {
             const urlst = try std.fmt.allocPrint(
                 self.alloc,
                 "https://generativelanguage.googleapis.com/v1beta/models/{s}:generateContent?key=" ++ opts.apikey,
@@ -146,7 +146,7 @@ fn Gemini(comptime opts: GeminiOpts) type {
             // defer self.alloc.free(body);
         }
 
-        fn deInit(self: *Self) void {
+        pub fn deInit(self: *Self) void {
             self.client.deinit();
         }
     };
