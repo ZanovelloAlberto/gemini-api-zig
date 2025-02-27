@@ -43,7 +43,7 @@ pub const JSONRes = struct {
     usageMetadata: UsageMetadata,
     candidates: []Candidate,
 };
-fn Gemini(comptime opts: GeminiOpts) type {
+pub fn Gemini(comptime opts: GeminiOpts) type {
     return struct {
         const Self = @This();
         const Models = .{
@@ -153,19 +153,19 @@ fn Gemini(comptime opts: GeminiOpts) type {
 }
 
 test "api" {
-    var g = Gemini(.{
-        .apikey = @import("./key.zig").apiKey,
-    }).init(std.testing.allocator);
+    // var g = Gemini(.{
+    //     .apikey = @import("./key.zig").apiKey,
+    // }).init(std.testing.allocator);
 
-    defer g.deInit();
+    // defer g.deInit();
 
-    var r = try g.query("ciao come va?");
-    std.debug.print("{s}", .{r.GetNext()});
-    std.debug.print("{s}", .{r.GetNext()});
+    // var r = try g.query("ciao come va?");
+    // std.debug.print("{s}", .{r.GetNext()});
+    // std.debug.print("{s}", .{r.GetNext()});
 
-    var r2 = try g.query("dimmi la circonferenza del sole");
-    std.debug.print("{s}", .{r2.GetNext()});
+    // var r2 = try g.query("dimmi la circonferenza del sole");
+    // std.debug.print("{s}", .{r2.GetNext()});
 
-    defer r.free();
-    defer r2.free();
+    // defer r.free();
+    // defer r2.free();
 }
