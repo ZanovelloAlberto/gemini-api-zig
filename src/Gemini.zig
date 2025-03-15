@@ -1,15 +1,14 @@
 const std = @import("std");
 
 /// Represents a single part of content (typically text)
-pub const ContentSegment = struct {
+pub const Part = struct {
     text: []const u8,
 };
-
 /// Request structure for Gemini API
 const RequestPayload = struct {
     contents: []const Content,
     pub const Content = struct {
-        parts: []const ContentSegment,
+        parts: []const Part,
     };
 };
 
@@ -17,12 +16,12 @@ const RequestPayload = struct {
 pub const ResponseData = struct {
     pub const Candidate = struct {
         pub const Content = struct {
-            parts: []const ContentSegment,
+            parts: []const Part,
             role: []const u8,
         };
         content: Content,
         finishReason: []const u8,
-        avgLogprobs: f32 = 0.0, // Added default value
+        avgLogprobs: f32 = 0.0,
     };
 
     pub const TokenDetail = struct {
@@ -162,7 +161,9 @@ pub fn GeminiClient(comptime config: GeminiConfig) type {
 
             const payload = RequestPayload{
                 .contents = &[_]RequestPayload.Content{
-                    .{ .parts = &[_]ContentSegment{.{ .text = prompt }} },
+                    .{ .parts = &[_]Part{
+                        .{ .text = prompt },
+                    } },
                 },
             };
             const request_body = try std.json.stringifyAlloc(self.allocator, payload, .{});
@@ -215,7 +216,7 @@ pub fn GeminiClient(comptime config: GeminiConfig) type {
 
         /// Gets available models (placeholder - Gemini API doesn't provide this endpoint yet)
         pub fn getModels(self: *Self) []const Model {
-            _ = self; // Suppress unused parameter warning
+            _ = self;
             return std.enums.values(Model);
         }
 
@@ -228,6 +229,7 @@ pub fn GeminiClient(comptime config: GeminiConfig) type {
         }
     };
 }
+
 // Tests
 test "GeminiClient basic generation" {
     const allocator = std.testing.allocator;
@@ -237,7 +239,10 @@ test "GeminiClient basic generation" {
     var client = GeminiAPI.init(allocator, api_key);
     defer client.deinit();
 
-    var result = try client.generate(.gemini_2_0_flash, "Hello, how are you?");
+    var result = try client.generate(
+        .gemini_2_0_flash,
+        "Hello, how are you?",
+    );
     defer result.deinit();
 
     const first_segment = result.getNext();
@@ -245,7 +250,7 @@ test "GeminiClient basic generation" {
     try std.testing.expect(first_segment.?.len > 0);
 }
 
-test "GeminiClient complete text" {
+test "GeminiClient complete text with config" {
     const allocator = std.testing.allocator;
     const api_key = std.posix.getenv("GEMINI_API_KEY") orelse @import("./key.zig").apiKey;
 
@@ -253,7 +258,10 @@ test "GeminiClient complete text" {
     var client = GeminiAPI.init(allocator, api_key);
     defer client.deinit();
 
-    var result = try client.generate(.gemini_2_0_flash, "Write a short story");
+    var result = try client.generate(
+        .gemini_2_0_flash,
+        "Write a short story",
+    );
     defer result.deinit();
 
     const full_text = try result.getFullText();
