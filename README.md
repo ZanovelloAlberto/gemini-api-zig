@@ -18,3 +18,19 @@ https://aistudio.google.com/app/apikey
 ```
 
 
+
+# usage
+
+```zig
+const allocator = std.heap.page_allocator;
+
+const GeminiAPI = GeminiClient(.{});
+var client = GeminiAPI.init(allocator, api_key);
+defer client.deinit();
+var result = try client.generate(.gemini_2_0_flash, "Write a short story");
+defer result.deinit();
+
+while (result.getNext()) |text| {
+    std.debug.print("Part: {s}\n", .{text});
+}
+```
